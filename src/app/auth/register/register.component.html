@@ -11,7 +11,9 @@
       <form
         class="form-horizontal form-material"
         id="loginform"
-        action="index.html"
+        autocomplete="off"
+        [formGroup]="registerForm"
+        (ngSubmit)="createUser()"
       >
         <a href="javascript:void(0)" class="text-center db"
           ><img src="./assets/images/logo-icon.png" alt="Home" /><br /><img
@@ -25,8 +27,8 @@
             <input
               class="form-control"
               type="text"
-              required=""
               placeholder="Name"
+              formControlName="name"
             />
           </div>
         </div>
@@ -35,8 +37,8 @@
             <input
               class="form-control"
               type="text"
-              required=""
               placeholder="Email"
+              formControlName="email"
             />
           </div>
         </div>
@@ -45,8 +47,8 @@
             <input
               class="form-control"
               type="password"
-              required=""
               placeholder="Password"
+              formControlName="password"
             />
           </div>
         </div>
@@ -55,19 +57,33 @@
             <input
               class="form-control"
               type="password"
-              required=""
               placeholder="Confirm Password"
+              formControlName="password2"
             />
           </div>
         </div>
         <div class="form-group row">
           <div class="col-md-12">
             <div class="checkbox checkbox-primary p-t-0">
-              <input id="checkbox-signup" type="checkbox" />
+              <input
+                id="checkbox-signup"
+                type="checkbox"
+                formControlName="terms"
+              />
               <label for="checkbox-signup">
                 I agree to all <a href="#">Terms</a></label
               >
             </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col text-danger">
+            <p *ngIf="fieldNotValid('name')">* The name is mandatory</p>
+            <p *ngIf="fieldNotValid('email')">
+              * The email is mandatory or have bad format
+            </p>
+            <p *ngIf="passwordsNotValid()">* The passwords must be match</p>
+            <p *ngIf="acceptTerms()">* The terms are mandatory</p>
           </div>
         </div>
         <div class="form-group text-center m-t-20">
@@ -84,9 +100,7 @@
           <div class="col-sm-12 text-center">
             <p>
               Already have an account?
-              <a href="pages-login-2.html" class="text-info m-l-5"
-                ><b>Sign In</b></a
-              >
+              <a routerLink="/login" class="text-info m-l-5"><b>Sign In</b></a>
             </p>
           </div>
         </div>
