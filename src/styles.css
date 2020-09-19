@@ -16,3 +16,11 @@
   justify-content: center;
   align-items: center;
 }
+
+.topbar .profile-pic {
+  height: 30px;
+}
+
+.sidebar-nav .user-profile > a img {
+  height: 30px;
+}
