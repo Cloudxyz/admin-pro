@@ -9,14 +9,16 @@ export class User {
     public google?: boolean,
     public img?: string,
     public role?: string,
-    public uid?: string
+    public uid?: string,
+    public active?: boolean
   ) {}
 
   get imageUrl() {
-    if (this.google) {
+    if (!this.img) {
+      return `${base_url}/upload/users/no-img`;
+    } else if (this.google) {
       return this.img;
-    }
-    if (this.img) {
+    } else if (this.img) {
       return `${base_url}/upload/users/${this.img}`;
     } else {
       return `${base_url}/upload/users/no-img`;

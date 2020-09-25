@@ -74,13 +74,13 @@ export class ProfileComponent implements OnInit {
     this.fileUploadService
       .updateProfileImage(this.imageUpload, 'users', this.user.uid)
       .then((img) => {
-        this.user.img = img;
         Swal.fire({
           title: 'Success',
           text: 'Image Updated',
           icon: 'success',
           confirmButtonText: 'Confirm',
         });
+        console.log(this.user);
       })
       .catch((error) => {
         Swal.fire({

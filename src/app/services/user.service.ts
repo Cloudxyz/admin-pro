@@ -1,7 +1,7 @@
 import { Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { RegisterForm } from '../auth/interfaces/register-form.interface';
-import { environment } from '../../environments/environment.prod';
+import { environment } from '../../environments/environment';
 import { LoginForm } from '../auth/interfaces/login.interface';
 import { map, tap, catchError } from 'rxjs/operators';
 import { Observable, of } from 'rxjs';
@@ -35,6 +35,14 @@ export class UserService {
     return this.user.uid || '';
   }
 
+  get headers() {
+    return {
+      headers: {
+        'x-token': this.token,
+      },
+    };
+  }
+
   googleInit() {
     return new Promise((resolve) => {
       gapi.load('auth2', () => {
@@ -57,24 +65,18 @@ export class UserService {
   }
 
   validateToken(): Observable<boolean> {
-    return this.http
-      .get(`${base_url}/login/renew`, {
-        headers: {
-          'x-token': this.token,
-        },
+    return this.http.get(`${base_url}/login/renew`, this.headers).pipe(
+      map((res: any) => {
+        const { email, google, name, role, img = '', uid } = res.user;
+        this.user = new User(name, email, '', google, img, role, uid);
+        localStorage.setItem('token', res.token);
+        return true;
+      }),
+      catchError((error) => {
+        console.log(error);
+        return of(false);
       })
-      .pipe(
-        map((res: any) => {
-          const { email, google, name, role, img = '', uid } = res.user;
-          this.user = new User(name, email, '', google, img, role, uid);
-          localStorage.setItem('token', res.token);
-          return true;
-        }),
-        catchError((error) => {
-          console.log(error);
-          return of(false);
-        })
-      );
+    );
   }
 
   updateProfile(data: { email: string; name: string; role: string }) {
@@ -82,11 +84,11 @@ export class UserService {
       ...data,
       role: this.user.role,
     };
-    return this.http.put(`${base_url}/users/update/${this.uid}`, data, {
-      headers: {
-        'x-token': this.token,
-      },
-    });
+    return this.http.put(
+      `${base_url}/users/update/${this.uid}`,
+      data,
+      this.headers
+    );
   }
 
   login(formData: LoginForm) {
@@ -116,5 +118,44 @@ export class UserService {
 
   createUser(formData: RegisterForm) {
     return this.http.post(`${base_url}/users/create`, formData);
+  }
+
+  getUsers(from: number = 0) {
+    return this.http
+      .get<any>(`${base_url}/users?from=${from}`, this.headers)
+      .pipe(
+        map((res) => {
+          const users = res.users.map(
+            (user) =>
+              new User(
+                user.name,
+                user.email,
+                '',
+                user.google,
+                user.img,
+                user.role,
+                user.uid,
+                user.active
+              )
+          );
+
+          return {
+            total: res.total,
+            users,
+          };
+        })
+      );
+  }
+
+  delete(uid: string) {
+    return this.http.delete(`${base_url}/users/delete/${uid}`, this.headers);
+  }
+
+  updateUser(user: User) {
+    return this.http.put(
+      `${base_url}/users/update/${user.uid}`,
+      user,
+      this.headers
+    );
   }
 }
