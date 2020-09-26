@@ -31,6 +31,10 @@ export class UserService {
     return localStorage.getItem('token') || '';
   }
 
+  get role(): string {
+    return this.user.role;
+  }
+
   get uid(): string {
     return this.user.uid || '';
   }
@@ -41,6 +45,11 @@ export class UserService {
         'x-token': this.token,
       },
     };
+  }
+
+  saveLocalStorage(token: string, menu: any) {
+    localStorage.setItem('token', token);
+    localStorage.setItem('menu', JSON.stringify(menu));
   }
 
   googleInit() {
@@ -57,6 +66,7 @@ export class UserService {
 
   logout() {
     localStorage.removeItem('token');
+    localStorage.removeItem('menu');
     this.auth2.signOut().then(() => {
       this.ngZone.run(() => {
         this.router.navigateByUrl('/login');
@@ -69,7 +79,9 @@ export class UserService {
       map((res: any) => {
         const { email, google, name, role, img = '', uid } = res.user;
         this.user = new User(name, email, '', google, img, role, uid);
-        localStorage.setItem('token', res.token);
+
+        this.saveLocalStorage(res.token, res.menu);
+
         return true;
       }),
       catchError((error) => {
@@ -99,7 +111,7 @@ export class UserService {
         } else {
           localStorage.removeItem('email');
         }
-        localStorage.setItem('token', res.token);
+        this.saveLocalStorage(res.token, res.menu);
 
         return true;
       })
@@ -109,7 +121,7 @@ export class UserService {
   loginGoogle(token) {
     return this.http.post(`${base_url}/login/google`, { token }).pipe(
       map((res: any) => {
-        localStorage.setItem('token', res.token);
+        this.saveLocalStorage(res.token, res.menu);
 
         return true;
       })
